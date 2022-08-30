@@ -51,3 +51,13 @@ keys <- read_dta("dyadic_mid_4.01.dta") %>%
 
 directed_dyad_18162010 <- left_join(keys, states_1, by = c("ccode_1", "year")) %>% left_join(states_2, by= c("ccode_2", "year")) 
 
+#clean contiguity data
+contg<- read_dta("DirectContiguity320/contdird.dta") %>%
+  rename(ccode_1 = state1no, ccode_2 = state2no) %>%
+  select(-c(state1ab, state2ab, version)) %>%
+  group_by(ccode_1, ccode_2, year) %>%
+  slice_max(order_by = "conttype") %>%
+  ungroup()
+
+#merge on contiguity data
+directed_dyad_18162010 <- directed_dyad_18162010 %>% left_join(contg, by = c("ccode_1", "ccode_2", "year")) %>% mutate(conttype = replace_na(conttype,0))
