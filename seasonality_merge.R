@@ -65,17 +65,16 @@ directed_dyad_18162010 <- directed_dyad_18162010 %>% left_join(contg, by = c("cc
 #clean colonial contiguity data
 colcontg <- read_dta("ColonialContiguity310/contcol.dta") %>%
   rename(ccode_1 = statelno, ccode_2 = statehno, colcont = conttype) %>%
-  select(-c(statelab, statehab, version, dependl, dependh))
+  select(-c(statelab, statehab, version, dependl, dependh)) %>%
+  rowwise() %>%
+  # Create a list in a tibble that we're going to expand soon.
+  mutate(year = list(seq(begin, end))) %>%
+  # Unnest the list, which will expand the data.
+  unnest(cols = c(year)) %>%
+  select(c(ccode_1, ccode_2, year, colcont)) %>%
+  group_by(ccode_1, ccode_2, year) %>%
+  slice(which.min(colcont))
 
-colcontg <- left_join(keys, colcontg, by = c("ccode_1", "ccode_2", "year"="begin")) %>% left_join(colcontg, by = c("ccode_1", "ccode_2", "year"="end"))
 
-colcontg <- colcontg %>%
-  group_by(ccode_1, ccode_2) %>%
-  arrange(year) %>%
-  fill(colcont.x, .direction = "down") %>%
-  fill(colcont.y, .direction = "up") %>%
-  mutate(colcont = ifelse(colcont.x == colcont.y, colcont.x, 0 )) 
 
- # select(-prev_val, -next_val)
-  
   
