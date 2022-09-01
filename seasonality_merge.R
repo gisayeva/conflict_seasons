@@ -73,8 +73,24 @@ colcontg <- read_dta("ColonialContiguity310/contcol.dta") %>%
   unnest(cols = c(year)) %>%
   select(c(ccode_1, ccode_2, year, colcont)) %>%
   group_by(ccode_1, ccode_2, year) %>%
-  slice(which.min(colcont))
+  slice(which.min(colcont)) %>%
+  ungroup()
 
+#merge colonial contiguity data
+directed_dyad_18162010 <-  left_join(directed_dyad_18162010, colcontg, by = c("ccode_1", "ccode_2", "year")) %>%
+  mutate(colcont = replace_na(colcont, 0))
 
-
-  
+#clean alliance data
+alliance <- read_dta("alliance_4.1/alliance_v4.1_by_dyad_yearly.dta") %>%
+  rename(ccode_1 = ccode1, ccode_2 = ccode2) %>%
+  mutate(alliance = case_when(
+    defense ==1 ~ 1,
+    neutrality ==1 ~ 2,
+    nonaggression ==1 ~ 3,
+    entente ==1 ~ 4,
+    TRUE ~ 5
+  )) %>%
+  group_by(ccode_1, ccode_2, year) %>%
+  slice(which.min(alliance)) %>%
+  mutate(alliance = ifelse(alliance == 5, 0, alliance)) %>%
+  select(c(ccode_1, ccode_2, year, alliance))
