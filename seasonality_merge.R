@@ -3,6 +3,7 @@ setwd("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data")
 library(tidyverse)
 library(expss)
 library(haven)
+library(countrycode)
 
 states <- read.csv("state_system/system2016.csv")
 states <- states %>% mutate(majpow = case_when(
@@ -94,3 +95,25 @@ alliance <- read_dta("alliance_4.1/alliance_v4.1_by_dyad_yearly.dta") %>%
   slice(which.min(alliance)) %>%
   mutate(alliance = ifelse(alliance == 5, 0, alliance)) %>%
   select(c(ccode_1, ccode_2, year, alliance))
+
+#merge alliance data
+directed_dyad_18162010 <-  left_join(directed_dyad_18162010, alliance, by = c("ccode_1", "ccode_2", "year")) %>%
+  mutate(alliance = replace_na(alliance, 0))
+
+# clean distance data
+dist <- read_dta("cepii/dist_cepii.dta") 
+# ISO to Correlates of War
+  
+dist <- dist %>% mutate(ccode_1 = countrycode(iso_o, origin = 'iso3c', destination = 'cown'), ccode_2 = countrycode(iso_d, origin = 'iso3c', destination = 'cown'))
+
+dist <- dist  %>% filter(!(iso_o %in% c("ABW","AIA", "ANT", "BMU", "CCK", "COK", "CXR", "CYM", "ESH", "FLK", "FRO", "GIB", "GLP"))) %>% 
+  select(c(ccode_1, ccode_2, distcap))%>%
+  rename(distance = distcap)
+### Checking missing country codes
+filter(dist, is.na(ccode_1))
+#most of the NAs are territories
+
+#merge distance dataset
+directed_dyad_18162010 <-  left_join(directed_dyad_18162010, dist, by = c("ccode_1", "ccode_2")) 
+filter(dist, is.na(distance))
+
