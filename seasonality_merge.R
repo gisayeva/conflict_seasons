@@ -125,3 +125,6 @@ directed_dyad_18162010 <- directed_dyad_18162010 %>%
     year>=2000 ~ (ccode_1*1000000)+(ccode_2*1000)+(year-2000)
   )) %>%
   relocate(dyadidyr, .before = ccode_1)
+
+write.csv(directed_dyad_18162010,"directed_dyad_18162010.csv", row.names = FALSE)
+
