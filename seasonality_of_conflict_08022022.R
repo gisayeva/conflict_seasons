@@ -8,6 +8,7 @@ library("npreg")
 library(mfp)
 library(ggthemes)
 library("ggformula")
+library("readxl")
 setwd("/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data")
 #load and clean MID location dataset
 temploc <- read_csv("MIDLOC_2.1/MIDLOCA_2.1.csv")
@@ -229,4 +230,18 @@ fig5 <- ggplot(data=mid_fig5, aes(y = edmidperday, x= enddata)) +
   scale_x_continuous(breaks=seq(1,365,30))
 fig5
 
-### use data from merged file  
+### use data from merged file
+mid <- mid %>% 
+  arrange(statea, stateb, year) %>%
+  mutate(dyadidyr = case_when(
+    year<2000 ~ (statea*1000000)+(stateb*1000)+(year-1000),
+    year>=2000 ~ (statea*1000000)+(stateb*1000)+(year-2000)
+  )) %>%
+  relocate(dyadidyr, .before = statea)
+
+dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv")
+
+mid <- left_join(mid, dir_dyad, by = "dyadidyr") %>%
+  mutate(stdata2=stdata*stdata,  enddata2=enddata*enddata, year2=year*year)
+
+pol_1 <- read_xls("p5v2018.xls")
