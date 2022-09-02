@@ -110,10 +110,18 @@ dist <- dist  %>% filter(!(iso_o %in% c("ABW","AIA", "ANT", "BMU", "CCK", "COK",
   select(c(ccode_1, ccode_2, distcap))%>%
   rename(distance = distcap)
 ### Checking missing country codes
-filter(dist, is.na(ccode_1))
+#filter(dist, is.na(ccode_1))
 #most of the NAs are territories
 
 #merge distance dataset
 directed_dyad_18162010 <-  left_join(directed_dyad_18162010, dist, by = c("ccode_1", "ccode_2")) 
-filter(dist, is.na(distance))
+#filter(directed_dyad_18162010, is.na(distance))
 
+#generate dyadidyear
+directed_dyad_18162010 <- directed_dyad_18162010 %>%
+  arrange(ccode_1, ccode_2, year) %>%
+  mutate(dyadidyr = case_when(
+    year<2000 ~ (ccode_1*1000000)+(ccode_2*1000)+(year-1000),
+    year>=2000 ~ (ccode_1*1000000)+(ccode_2*1000)+(year-2000)
+  )) %>%
+  relocate(dyadidyr, .before = ccode_1)
