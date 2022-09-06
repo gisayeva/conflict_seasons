@@ -233,6 +233,13 @@ fig5 <- ggplot(data=mid_fig5, aes(y = edmidperday, x= enddata)) +
   scale_x_continuous(breaks=seq(1,365,30))
 fig5
 
+##saving the figures as pdf images
+ggsave(paste0("Fig1", ".pdf"), plot = fig1)
+ggsave(paste0("Fig2", ".pdf"), plot = fig2)
+ggsave(paste0("Fig3", ".pdf"), plot = fig3)
+ggsave(paste0("Fig4", ".pdf"), plot = fig4)
+ggsave(paste0("Fig5", ".pdf"), plot = fig5)
+
 ### use data from merged file
 mid <- mid %>% 
   arrange(statea, stateb, year) %>%
@@ -311,4 +318,59 @@ season_data <- season_data %>%
     demautai<=demautbi & !is.na(demautai) & !is.na(demautbi) ~ demautbi,
     TRUE ~NA_real_)) %>%
   apply_labels(demhii ="DEMi - Higher of interp. dyadic scores")
+
+#check code below works
+#preparing capability data
+season_data <- season_data %>%
+  mutate(cinclo = case_when(
+    cap_1<=cap_2 & !is.na(cap_1) & !is.na(cap_2) ~ cap_1,
+    cap_1>cap_2 & !is.na(cap_1) & !is.na(cap_2) ~ cap_2,
+    TRUE ~ NA_real_
+  ),
+  cinchi =case_when(
+    cap_1<=cap_2 & !is.na(cap_1) & !is.na(cap_2) ~ cap_2,
+    cap_1>cap_2 & !is.na(cap_1) & !is.na(cap_2) ~ cap_1,
+    TRUE ~ NA_real_),
+  cincratio = (cinclo/(cinclo+cinchi))) %>%
+  apply_labels(cinclo ="CINC - Lower of dyadic scores", cinchi ="CINC - Higher of dyadic scores", cincratio= "CINC - ratio of capabilities"
+)
+
+#preparing alliance data
+season_data <- season_data %>%
+  mutate(alliance = case_when(
+    alliance ==5 ~0,
+    TRUE ~ alliance
+  )) %>%
+  mutate(onemajor = case_when(
+    majpow_1 ==1 | majpow_2 ==1 ~ 1
+    !is.na(majpow_1) & !is.na(majpow_2) ~ 0
+  ),
+  allydumy = case_when(
+    alliance >0 & !is.na(alliance) ~ 1,
+    is.na(alliance) ~ NA_real_,
+    TRUE ~ 0
+  ),
+  defdummy = case_when(
+    alliance ==1 ~ 1,
+    is.na(alliance) ~ NA_real_,
+    TRUE ~ 0
+  )) %>%
+  apply_labels(allydumy ="ALLIANCE - dummy for all alliance types", defdummy ="ALLIANCE - dummy for defense pact")
+
+#logging distance
+season_data <- season_data %>% 
+  mutate(logdist = ln(distance +1)) %>%
+  apply_labels(logdist = "ln(distance +1)") %>%
+  #constructing energy as a proxy for development
+  mutate(irstpopa=irst_1/tpop_1, irstpopb=irst_2/tpop_2, engypopa=pec_1/tpop_1, engypopb=pec_2/tpop_2) %>%
+  mutate(irstpop = case_when(
+    irstpopa<irstpopb &!is.na(irstpopa)& !is.na(irstpopb) ~irstpopa,
+    irstpopa>=irstpopb &!is.na(irstpopa)& !is.na(irstpopb) ~irstpopb
+  ),
+  engypop= case_when(
+    engypopa<engypopb &!is.na(engypopa)& !is.na(engypopb) ~engypopa,
+    engypopa>=engypopb &!is.na(engypopa)& !is.na(engypopb) ~engypopb
+  )) %>%
+    apply_labels(irstpop= "Dev. proxy, lower of irst/tpop", engypop= "Dev. proxy, lower of energy/tpop", engypopl= "Dev. proxy, lower of ln(energy/tpop)")
+
 
