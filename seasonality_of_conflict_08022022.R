@@ -150,12 +150,13 @@ mid <- mid %>%
   mutate(edwarpermon=sum(northwar))
  
 ###
-mid_fig1<- mid %>% arrange(strtmnth) %>% 
+mid_fig1 <- mid %>% arrange(strtmnth) %>% 
   group_by(strtmnth) %>% slice(1)
 
 ##Create Figure 1 in the paper
-f<- mfp(data = mid, stwarpermon ~ fp(strtmnth))
-summary(f)
+#### bad attempts
+#f<- mfp(data = mid, stwarpermon ~ fp(strtmnth))
+#summary(f)
 
 p<- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   geom_point() +
@@ -167,8 +168,9 @@ p<- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   xlim(1,12) + ylim(-20,80)
 p
 p+ theme_stata()
-   
-q <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
+
+###best attempt at figure 1   
+fig1 <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   geom_point() +
   #geom_function(stat=f)+
   #geom_spline(spar = .5)+
@@ -177,12 +179,12 @@ q <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   labs(color="")+
   ylab("Number of War Onsets per Month")+ xlab("Month of Year") +
   xlim(1,12) + ylim(-20,80)
-q + theme_classic()
+fig1 + theme_classic()
 
  
  
-mfp(strtmnth ~ fp(stwarpermon, df=1), family = glm, data = mid)
-?mfp
+#mfp(strtmnth ~ fp(stwarpermon, df=1), family = glm, data = mid)
+#mfp
 
 
 #### Figure 2
@@ -211,6 +213,7 @@ fig3
 ### Figure 4
 #comment: conflict onset by day, MIDs, fatal MIDs, and Wars
 #This is Figure 4 in paper (version 07082019)
+#uses same edited data as fig 2
 
 fig4 <- ggplot(data=mid_fig2, aes(y = stmidperday, x= stdata)) +
   geom_point() +
@@ -239,9 +242,73 @@ mid <- mid %>%
   )) %>%
   relocate(dyadidyr, .before = statea)
 
-dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv")
+dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv") %>% select(-c(year))
 
 mid <- left_join(mid, dir_dyad, by = "dyadidyr") %>%
   mutate(stdata2=stdata*stdata,  enddata2=enddata*enddata, year2=year*year)
 
-pol_1 <- read_xls("p5v2018.xls")
+
+#merge on polity data
+#twice
+pol_1 <- read_xls("p5v2018.xls") %>%
+  select(c(ccode, year, polity, polity2)) 
+names(pol_1) <- paste0(names(pol_1), "1")
+pol_1 <- pol_1 %>%
+  rename(ccode_1 = ccode1, year= year1)
+
+#clean polity data second time
+pol_2 <- read_xls("p5v2018.xls") %>%
+  select(c(ccode, year, polity, polity2)) 
+names(pol_2) <- paste0(names(pol_2), "2")
+pol_2 <- pol_2 %>%
+  rename(ccode_2 = ccode2, year= year2)
+
+#here, import dataset from MIDs that you use
+keys <- read_dta("dyadic_mid_4.01/dyadic_mid_4.01.dta") %>%
+  select(statea, stateb, year) %>%
+  unique() %>%
+  rename(ccode_1 = statea, ccode_2 = stateb)
+
+#merge on keys
+pol_rev_a<- left_join(keys, pol_1, by = c("ccode_1", "year")) %>% left_join(pol_2, by = c("ccode_2", "year")) %>%
+  rename(statea = ccode_1, stateb = ccode_2) %>%
+  mutate(dyadidyr = case_when(
+    year<2000 ~ (statea*1000000)+(stateb*1000)+(year-1000),
+    year>=2000 ~ (statea*1000000)+(stateb*1000)+(year-2000)
+  )) %>%
+    relocate(dyadidyr, .before = statea)
+
+#pol_rev_b can be omitted. Origianlly used to try to replace missing values. But original code produces no changes in data
+pol_rev_b <- pol_rev_a %>%
+  select(-c(dyadidyr)) %>%
+  rename(bstatea = statea, bstateb = stateb, polityxx = polity1, bpolity1 = polity2, polityyy = polity21, bpolity21 = polity22) %>%
+  mutate(dyadidyr = case_when(
+    year<2000 ~ (bstatea*1000000)+(bstateb*1000)+(year-1000),
+    year>=2000 ~ (bstatea*1000000)+(bstateb*1000)+(year-2000)
+  )) %>%
+  relocate(dyadidyr, .before = bstatea)
+
+season_data <- left_join(mid, pol_rev_a, by = c("dyadidyr")) %>% left_join(pol_rev_b, by = c("dyadidyr")) %>%
+  #original code had lines to replace potentially missing values, but it does not change anything
+  select(-c(bstatea, bstateb, bpolity1, bpolity21))
+
+#data manipulation
+season_data <- season_data %>% 
+  mutate(demautai=((polity21+10)/2), demautbi=((polity22+10)/2), demautinter=demautai*demautbi) %>%
+  apply_labels(demautai ="DEMi - polity21(j. hewitt)+10/2", demautbi= "DEMi - polity22(j. hewitt)+10/2", demautinter= "DEMi - demautai*demautbi")
+
+#comment: lower of dyadic democracy scores
+
+season_data <- season_data %>%
+  mutate(demloi= case_when(
+    demautai<=demautbi & !is.na(demautai) & !is.na(demautbi) ~ demautai,
+    demautai>demautbi & !is.na(demautai) & !is.na(demautbi) ~ demautbi,
+    TRUE ~NA_real_)) %>%
+  apply_labels(demloi= "DEMi - Lower of interp. dyadic scores") %>%
+#higher of dyadic dem scores
+  mutate(demhii= case_when(
+    demautai>demautbi & !is.na(demautai) & !is.na(demautbi) ~ demautai,
+    demautai<=demautbi & !is.na(demautai) & !is.na(demautbi) ~ demautbi,
+    TRUE ~NA_real_)) %>%
+  apply_labels(demhii ="DEMi - Higher of interp. dyadic scores")
+
