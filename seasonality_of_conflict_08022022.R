@@ -319,7 +319,6 @@ season_data <- season_data %>%
     TRUE ~NA_real_)) %>%
   apply_labels(demhii ="DEMi - Higher of interp. dyadic scores")
 
-#check code below works
 #preparing capability data
 season_data <- season_data %>%
   mutate(cinclo = case_when(
@@ -342,7 +341,7 @@ season_data <- season_data %>%
     TRUE ~ alliance
   )) %>%
   mutate(onemajor = case_when(
-    majpow_1 ==1 | majpow_2 ==1 ~ 1
+    majpow_1 ==1 | majpow_2 ==1 ~ 1,
     !is.na(majpow_1) & !is.na(majpow_2) ~ 0
   ),
   allydumy = case_when(
@@ -357,9 +356,11 @@ season_data <- season_data %>%
   )) %>%
   apply_labels(allydumy ="ALLIANCE - dummy for all alliance types", defdummy ="ALLIANCE - dummy for defense pact")
 
+#check code below works
+
 #logging distance
 season_data <- season_data %>% 
-  mutate(logdist = ln(distance +1)) %>%
+  mutate(logdist = log(distance +1)) %>%
   apply_labels(logdist = "ln(distance +1)") %>%
   #constructing energy as a proxy for development
   mutate(irstpopa=irst_1/tpop_1, irstpopb=irst_2/tpop_2, engypopa=pec_1/tpop_1, engypopb=pec_2/tpop_2) %>%
@@ -370,6 +371,10 @@ season_data <- season_data %>%
   engypop= case_when(
     engypopa<engypopb &!is.na(engypopa)& !is.na(engypopb) ~engypopa,
     engypopa>=engypopb &!is.na(engypopa)& !is.na(engypopb) ~engypopb
+  ),
+  engypopl=case_when(
+    engypopa<engypopb & !is.na(engypopa) &!is.na(engypopb) ~log(engypopa +1),
+    engypopa>=engypopb & !is.na(engypopa) &!is.na(engypopb) ~log(engypopb +1)
   )) %>%
     apply_labels(irstpop= "Dev. proxy, lower of irst/tpop", engypop= "Dev. proxy, lower of energy/tpop", engypopl= "Dev. proxy, lower of ln(energy/tpop)")
 
