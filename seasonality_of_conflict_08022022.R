@@ -434,3 +434,6 @@ t2_m5 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_
 t2_m6 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
 t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "text")
 
+##make table 3
+t3_m1<- lm_robust(absno1diff ~ distance+ year+ numstate +numGPs, data= season_data)
+t3_m2 <- lm_robust(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstate+ numGPs)
