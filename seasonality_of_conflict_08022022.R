@@ -426,14 +426,24 @@ t1<- stargazer(t1_m1, t1_m2, t1_m3, t1_m4, t1_m5, t1_m6, title = "Predicting the
 ##make table 2
 ##the 6 models
 ##variable named numstate in Stata version of code
-t2_m1 <- lm_robust(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
-t2_m2 <- lm_robust(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(northwar ==1))
-t2_m3 <- lm_robust(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
-t2_m4 <- lm_robust(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
-t2_m5 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
-t2_m6 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
+t2_m1 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m2 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(northwar ==1))
+t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m4 <- lm(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m5 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
+t2_m6 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
 t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "text")
 
 ##make table 3
-t3_m1<- lm_robust(absno1diff ~ distance+ year+ numstate +numGPs, data= season_data)
-t3_m2 <- lm_robust(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstate+ numGPs)
+t3_m1<- lm(absno1diff ~ distance+ year+ numstates +numGPs, data= season_data)
+t3_m2 <- lm(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
+t3_m3 <- lm(absdiff ~ distance +recip+ year+ cap_1 +cap_2+ capinter+ demautai +demautbi+ demautinter +engypopa +engypopb+ engypopinter+ onemajor+ colcont +allydumy +numstates+ numGPs, data = season_data)
+t3_m4 <-  lm(absno1end ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
+t3_m5 <- lm(absno1end ~distance+ year +cap_1 +cap_2 +capinter+ demautai+ demautbi+ demautinter+ engypopa +engypopb+ engypopinter+ onemajor +colcont +defdummy +numstates+ numGPs, data= season_data, subset= (war ==1))
+t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "text")
+
+## create figure 6
+pred<- predict(t2_m3, newdata = season_data, interval = "confidence")
+plot(pred)
+fig6<- ggplot(data = pred) %>% geom_smooth(aes(stdata, fit))
+
