@@ -157,22 +157,6 @@ mid_fig1 <- mid %>% arrange(strtmnth) %>%
   group_by(strtmnth) %>% slice(1)
 
 ##Create Figure 1 in the paper
-#### bad attempts
-#f<- mfp(data = mid, stwarpermon ~ fp(strtmnth))
-#summary(f)
-
-p<- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
-  geom_point() +
-  #geom_function(stat=f)+
-  stat_smooth(method = "lm", formula = y ~ I((x/10)^1) + I((x/10)^2))+
-  ggtitle("MID War Onsets per Month")+ 
-  labs(color="")+
-  ylab("Number of War Onsets per Month")+ xlab("Month of Year") +
-  xlim(1,12) + ylim(-20,80)
-p
-p+ theme_stata()
-
-###best attempt at figure 1   
 fig1 <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   geom_point() +
   #geom_function(stat=f)+
@@ -181,60 +165,66 @@ fig1 <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   ggtitle("MID War Onsets per Month")+ 
   labs(color="")+
   ylab("Number of War Onsets per Month")+ xlab("Month of Year") +
-  xlim(1,12) + ylim(-20,80)
-fig1 + theme_classic()
+  xlim(1,12) + ylim(-20,80)+ 
+  scale_x_continuous(breaks=seq(1,12,1))
+fig1+theme_clean()
 
  
- 
-#mfp(strtmnth ~ fp(stwarpermon, df=1), family = glm, data = mid)
-#mfp
-
-
+########
 #### Figure 2
+#######
 mid_fig2 <- mid %>% group_by(stdata) %>% slice(1)
 fig2<- ggplot(data = mid_fig2, aes(y = stwarperday, x = stdata)) +
-  geom_point() +
-  geom_smooth( method = 'gam')
+  geom_point(color = "black") +
+  geom_smooth( method = 'gam',colour="dark red", se =FALSE)+
+  ggtitle("War Onsets per Day (Northern Hemisphere)")+ 
+  labs(color="")+
+  ylab("Number of War Onsets per Day")+ xlab("Day of Year")+
+  theme_clean()
 fig2
 
+#######
 ### Figure 3
-#the stata code
-#comment: mids per day of year
-#This is Figure 3 in the paper (version 07082019)
+#######
 mid_fig3 <- mid %>% mutate(dummy = 1) %>%
   group_by(strtday) %>%
   mutate(stdaycount = sum(dummy)) %>%
   slice(1)
 
 fig3 <- ggplot(data = mid_fig3, aes(x = strtday, y = stdaycount)) +
-  geom_bar(stat="identity")+ 
+  geom_bar(stat="identity", fill= "light blue")+ 
   labs(color="")+
   ylab("Number of MID Onsets by Day of Month")+ 
-  xlab("Day of Month") 
-fig3  
+  xlab("Day of Month")+
+  theme_clean()
+fig3 
 
+#######
 ### Figure 4
+#######
 #comment: conflict onset by day, MIDs, fatal MIDs, and Wars
-#This is Figure 4 in paper (version 07082019)
 #uses same edited data as fig 2
 
 fig4 <- ggplot(data=mid_fig2, aes(y = stmidperday, x= stdata)) +
   geom_point() +
   xlab("Day of Year") + ylab("Number of MID Onsets per Day")+
-  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1) +
-  scale_x_continuous(breaks=seq(1,365,30))
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1, se= F, color = "dark red") +
+  scale_x_continuous(breaks=seq(1,365,30))+
+  theme_clean()
 fig4
 
+#######
 ### Figure 5
+#######
 mid_fig5 <- mid %>% group_by(enddata) %>% slice(1)
 #comment: conflict termination by day, MIDs, fatal MIDs, and Wars
-#This is Figure 5 in the paper (version 07082019)
 fig5 <- ggplot(data=mid_fig5, aes(y = edmidperday, x= enddata)) +
   geom_point() +
   xlab("Day of Year") + ylab("Number of MID Terminations per Day")+
-  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1) +
-  scale_x_continuous(breaks=seq(1,365,30))
-fig5
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1, se = F, color = "dark red") +
+  scale_x_continuous(breaks=seq(1,365,30)) +
+  theme_clean()
+fig5 
 
 ##saving the figures as pdf images
 ggsave(paste0("Fig1", ".pdf"), plot = fig1)
@@ -402,16 +392,12 @@ season_data <- season_data %>%
 
 
 
-##Create table 1 part a
-season_data_t1a<- season_data %>%
-  arrange(stdata) %>%
-  group_by(stdata) %>%
-  slice(1) 
-season_data_t1b<- season_data %>%
-  arrange(enddata) %>%
-  group_by(enddata) %>%
-  slice(1)
-#figure out how to add robust errors and cluster on disno
+##Create table 1
+season_data_t1a<- season_data %>% arrange(stdata) %>%
+  group_by(stdata) %>% slice(1) 
+season_data_t1b<- season_data %>% arrange(enddata) %>%
+  group_by(enddata) %>% slice(1)
+#figure out how to/whether add robust errors and cluster on disno
 t1_m1<- glm.nb(stmidperday ~ stdata+ stdata2, data = season_data_t1a)
 t1_m2<- glm.nb(stfatperday ~stdata +stdata2, data = season_data_t1a)
 t1_m3<- glm.nb(stwarperday ~ stdata+ stdata2, data = season_data_t1a)
