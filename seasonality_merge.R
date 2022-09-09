@@ -24,11 +24,11 @@ states <- states %>% mutate(majpow = case_when(
   apply_labels( majpow ="Major power - 1 if state is a major power in a given year, 0 otherwise",
                 numGPs = "Number of great powers in the system",
                 numstates= "Number of states in the system") %>%
-  select(-c(version))
+  dplyr::select(-version)
 
 #get capabilities data
 capab <- read_dta("NMC_6.0/NMC-60-abridged/NMC-60-abridged.dta") %>%
-  select(-c(version, stateabb)) %>%
+  dplyr::select(-c(version, stateabb)) %>%
   rename(cap= cinc)
 
 #merge major power data with capabilities data
@@ -46,16 +46,16 @@ states_2 <- states_2 %>% rename(year = year_2,numGPs = numGPs_2, numstates= nums
 
 #here, import dataset from MIDs that you use
 keys <- read_dta("dyadic_mid_4.01.dta") %>%
-  select(statea, stateb, year) %>%
+  dplyr::select(statea, stateb, year) %>%
   unique() %>%
   rename(ccode_1 = statea, ccode_2 = stateb)
 
-directed_dyad_18162010 <- left_join(keys, states_1, by = c("ccode_1", "year")) %>% left_join(states_2, by= c("ccode_2", "year")) 
+directed_dyad_18162010 <- left_join(keys, states_1) %>% left_join(states_2) 
 
 #clean contiguity data
 contg<- read_dta("DirectContiguity320/contdird.dta") %>%
   rename(ccode_1 = state1no, ccode_2 = state2no) %>%
-  select(-c(state1ab, state2ab, version)) %>%
+  dplyr::select(-c(state1ab, state2ab, version)) %>%
   group_by(ccode_1, ccode_2, year) %>%
   slice_max(order_by = "conttype") %>%
   ungroup()
@@ -66,13 +66,13 @@ directed_dyad_18162010 <- directed_dyad_18162010 %>% left_join(contg, by = c("cc
 #clean colonial contiguity data
 colcontg <- read_dta("ColonialContiguity310/contcol.dta") %>%
   rename(ccode_1 = statelno, ccode_2 = statehno, colcont = conttype) %>%
-  select(-c(statelab, statehab, version, dependl, dependh)) %>%
+  dplyr::select(-c(statelab, statehab, version, dependl, dependh)) %>%
   rowwise() %>%
   # Create a list in a tibble that we're going to expand soon.
   mutate(year = list(seq(begin, end))) %>%
   # Unnest the list, which will expand the data.
   unnest(cols = c(year)) %>%
-  select(c(ccode_1, ccode_2, year, colcont)) %>%
+  dplyr::select(c(ccode_1, ccode_2, year, colcont)) %>%
   group_by(ccode_1, ccode_2, year) %>%
   slice(which.min(colcont)) %>%
   ungroup()
@@ -94,7 +94,7 @@ alliance <- read_dta("alliance_4.1/alliance_v4.1_by_dyad_yearly.dta") %>%
   group_by(ccode_1, ccode_2, year) %>%
   slice(which.min(alliance)) %>%
   mutate(alliance = ifelse(alliance == 5, 0, alliance)) %>%
-  select(c(ccode_1, ccode_2, year, alliance))
+  dplyr::select(c(ccode_1, ccode_2, year, alliance))
 
 #merge alliance data
 directed_dyad_18162010 <-  left_join(directed_dyad_18162010, alliance, by = c("ccode_1", "ccode_2", "year")) %>%
@@ -107,7 +107,7 @@ dist <- read_dta("cepii/dist_cepii.dta")
 dist <- dist %>% mutate(ccode_1 = countrycode(iso_o, origin = 'iso3c', destination = 'cown'), ccode_2 = countrycode(iso_d, origin = 'iso3c', destination = 'cown'))
 
 dist <- dist  %>% filter(!(iso_o %in% c("ABW","AIA", "ANT", "BMU", "CCK", "COK", "CXR", "CYM", "ESH", "FLK", "FRO", "GIB", "GLP"))) %>% 
-  select(c(ccode_1, ccode_2, distcap))%>%
+  dplyr::select(c(ccode_1, ccode_2, distcap))%>%
   rename(distance = distcap)
 ### Checking missing country codes
 #filter(dist, is.na(ccode_1))
