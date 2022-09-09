@@ -9,15 +9,18 @@ library(mfp)
 library(ggthemes)
 library("ggformula")
 library("readxl")
+library(MASS)
+library(estimatr)
+library(stargazer)
 setwd("/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data")
 #load and clean MID location dataset
 temploc <- read_csv("MIDLOC_2.1/MIDLOCA_2.1.csv")
 temploc<- rename(temploc, disno = dispnum)
-temploc <- select(temploc, -c(year, midloc2_location, midloc2_measuringpoint))
+temploc <- dplyr::select(temploc, -c(year, midloc2_location, midloc2_measuringpoint))
 
 #load and clean mid dataset
 mid <- read_dta("dyadic_mid_4.01/dyadic_mid_4.01.dta") %>% 
-  select(-c("namea", "nameb")) %>% 
+  dplyr::select(-c("namea", "nameb")) %>% 
   left_join(temploc, by= c("disno")) %>% 
   arrange(statea, stateb, year) 
 
@@ -42,7 +45,7 @@ mid <- mid %>% mutate(smonthday = case_when(
 mid <- mid %>%  mutate(no1stdata = ifelse(strtday != 1, stdata, NA)) %>%
   apply_labels(no1stdata = "DATE - no first of month, day of year state A onset of MID") %>%
   mutate(no1stdata2=no1stdata*no1stdata) %>%
-  select(-c(smonthday))
+  dplyr::select(-c(smonthday))
 
 #calculate day of end of conflict
 mid <- mid %>% arrange(endmnth) %>%
@@ -80,7 +83,7 @@ mid <- mid %>%
     TRUE~endday+emonthday
   )) %>%
   apply_labels(no1enddata = "DATE - no last of month, day of year state A onset of MID") %>%
-  select(-c(emonthday))
+  dplyr::select(-c(emonthday))
   
 mid <- mid %>% arrange(disno, statea, stateb, year) %>%
   #drop repeated disputes
@@ -249,7 +252,7 @@ mid <- mid %>%
   )) %>%
   relocate(dyadidyr, .before = statea)
 
-dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv") %>% select(-c(year))
+dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv") %>% dplyr::select(-c(year))
 
 mid <- left_join(mid, dir_dyad, by = "dyadidyr") %>%
   mutate(stdata2=stdata*stdata,  enddata2=enddata*enddata, year2=year*year)
@@ -258,21 +261,21 @@ mid <- left_join(mid, dir_dyad, by = "dyadidyr") %>%
 #merge on polity data
 #twice
 pol_1 <- read_xls("p5v2018.xls") %>%
-  select(c(ccode, year, polity, polity2)) 
+  dplyr::select(c(ccode, year, polity, polity2)) 
 names(pol_1) <- paste0(names(pol_1), "1")
 pol_1 <- pol_1 %>%
   rename(ccode_1 = ccode1, year= year1)
 
 #clean polity data second time
 pol_2 <- read_xls("p5v2018.xls") %>%
-  select(c(ccode, year, polity, polity2)) 
+  dplyr::select(c(ccode, year, polity, polity2)) 
 names(pol_2) <- paste0(names(pol_2), "2")
 pol_2 <- pol_2 %>%
   rename(ccode_2 = ccode2, year= year2)
 
 #here, import dataset from MIDs that you use
 keys <- read_dta("dyadic_mid_4.01/dyadic_mid_4.01.dta") %>%
-  select(statea, stateb, year) %>%
+  dplyr::select(statea, stateb, year) %>%
   unique() %>%
   rename(ccode_1 = statea, ccode_2 = stateb)
 
@@ -287,7 +290,7 @@ pol_rev_a<- left_join(keys, pol_1, by = c("ccode_1", "year")) %>% left_join(pol_
 
 #pol_rev_b can be omitted. Origianlly used to try to replace missing values. But original code produces no changes in data
 pol_rev_b <- pol_rev_a %>%
-  select(-c(dyadidyr)) %>%
+  dplyr::select(-c(dyadidyr)) %>%
   rename(bstatea = statea, bstateb = stateb, polityxx = polity1, bpolity1 = polity2, polityyy = polity21, bpolity21 = polity22) %>%
   mutate(dyadidyr = case_when(
     year<2000 ~ (bstatea*1000000)+(bstateb*1000)+(year-1000),
@@ -297,7 +300,7 @@ pol_rev_b <- pol_rev_a %>%
 
 season_data <- left_join(mid, pol_rev_a, by = c("dyadidyr")) %>% left_join(pol_rev_b, by = c("dyadidyr")) %>%
   #original code had lines to replace potentially missing values, but it does not change anything
-  select(-c(bstatea, bstateb, bpolity1, bpolity21))
+  dplyr::select(-c(bstatea, bstateb, bpolity1, bpolity21))
 
 #data manipulation
 season_data <- season_data %>% 
@@ -356,8 +359,6 @@ season_data <- season_data %>%
   )) %>%
   apply_labels(allydumy ="ALLIANCE - dummy for all alliance types", defdummy ="ALLIANCE - dummy for defense pact")
 
-#check code below works
-
 #logging distance
 season_data <- season_data %>% 
   mutate(logdist = log(distance +1)) %>%
@@ -378,4 +379,58 @@ season_data <- season_data %>%
   )) %>%
     apply_labels(irstpop= "Dev. proxy, lower of irst/tpop", engypop= "Dev. proxy, lower of energy/tpop", engypopl= "Dev. proxy, lower of ln(energy/tpop)")
 
+season_data <- season_data %>%
+  mutate(capinter=cap_1*cap_2,
+         summilper=((milper_1/1000)+(milper_2/1000)),
+         diffmilper=abs((milper_1/1000)-(milper_2/1000)),
+         summilex=((milex_1/1000)+(milex_2/1000)),
+         diffmilex=abs((milex_1/1000)-(milex_2/1000)),
+         sumengy=((pec_1/1000)+(pec_2/1000)),
+         diffengy=abs((pec_1/1000)-(pec_2/1000)),
+         capsum=cap_1+cap_2,
+         capdiff=abs(cap_1-cap_2),
+         polityinter=polity21*polity22,
+         engypopinter=engypopa*engypopb) %>%
+  mutate(absdiff=abs(176-stdata),
+         absno1diff=abs(176-no1stdata),
+         absend=abs(203-enddata),
+         absno1end=abs(203-no1enddata)
+         )
+#comment: 176 is the median value of stdata
+#comment:  NA?? is the median value of no1stdata
+#comment: 203 is the median value of enddata
+
+
+
+##Create table 1 part a
+season_data_t1a<- season_data %>%
+  arrange(stdata) %>%
+  group_by(stdata) %>%
+  slice(1) 
+season_data_t1b<- season_data %>%
+  arrange(enddata) %>%
+  group_by(enddata) %>%
+  slice(1)
+#figure out how to add robust errors and cluster on disno
+t1_m1<- glm.nb(stmidperday ~ stdata+ stdata2, data = season_data_t1a)
+t1_m2<- glm.nb(stfatperday ~stdata +stdata2, data = season_data_t1a)
+t1_m3<- glm.nb(stwarperday ~ stdata+ stdata2, data = season_data_t1a)
+t1_m4<- glm.nb(edwarall~ enddata +enddata2, data = season_data_t1b)
+t1_m5<- glm.nb(edfatperday ~enddata+ enddata2, data = season_data_t1b)
+t1_m6<- glm.nb(edmidperday ~enddata +enddata2, data = season_data_t1b)
+
+t1<- stargazer(t1_m1, t1_m2, t1_m3, t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text")
+##comment: results not much different from original, even with no cluster or robust errors
+
+
+##make table 2
+##the 6 models
+##variable named numstate in Stata version of code
+t2_m1 <- lm_robust(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m2 <- lm_robust(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(northwar ==1))
+t2_m3 <- lm_robust(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m4 <- lm_robust(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m5 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
+t2_m6 <- lm_robust(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
+t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "text")
 
