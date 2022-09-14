@@ -167,7 +167,7 @@ fig1 <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   ylab("Number of War Onsets per Month")+ xlab("Month of Year") +
   xlim(1,12) + ylim(-20,80)+ 
   scale_x_continuous(breaks=seq(1,12,1))
-fig1+theme_clean()
+fig1+theme_bw()
 
  
 ########
@@ -194,8 +194,9 @@ mid_fig3 <- mid %>% mutate(dummy = 1) %>%
 fig3 <- ggplot(data = mid_fig3, aes(x = strtday, y = stdaycount)) +
   geom_bar(stat="identity", fill= "light blue")+ 
   labs(color="")+
-  ylab("Number of MID Onsets by Day of Month")+ 
+  ylab("Number of MID Onsets")+ 
   xlab("Day of Month")+
+  ggtitle("MID Onsets by Day of Month") +
   theme_clean()
 fig3 
 
@@ -207,9 +208,10 @@ fig3
 
 fig4 <- ggplot(data=mid_fig2, aes(y = stmidperday, x= stdata)) +
   geom_point() +
-  xlab("Day of Year") + ylab("Number of MID Onsets per Day")+
+  xlab("Day of Year") + ylab("Number of MID Onsets")+
   stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1, se= F, color = "dark red") +
   scale_x_continuous(breaks=seq(1,365,30))+
+  ggtitle("MID Onsets per Day (Northern Hemisphere)") +
   theme_clean()
 fig4
 
@@ -223,6 +225,7 @@ fig5 <- ggplot(data=mid_fig5, aes(y = edmidperday, x= enddata)) +
   xlab("Day of Year") + ylab("Number of MID Terminations per Day")+
   stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1, se = F, color = "dark red") +
   scale_x_continuous(breaks=seq(1,365,30)) +
+  ggtitle("MID Terminations per Day (Northern Hemisphere")+
   theme_clean()
 fig5 
 
@@ -405,9 +408,8 @@ t1_m4<- glm.nb(edwarall~ enddata +enddata2, data = season_data_t1b)
 t1_m5<- glm.nb(edfatperday ~enddata+ enddata2, data = season_data_t1b)
 t1_m6<- glm.nb(edmidperday ~enddata +enddata2, data = season_data_t1b)
 
-t1<- stargazer(t1_m1, t1_m2, t1_m3, t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text")
-##comment: results not much different from original, even with no cluster or robust errors
-
+t1a<- stargazer(t1_m1, t1_m2, t1_m3, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("All MIDs", "Fatal MIDs", "MID Wars"))
+t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("MID Wars", "Fatal MIDs", "Non-fatal MIDs"))
 
 ##make table 2
 ##the 6 models
@@ -418,7 +420,7 @@ t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2
 t2_m4 <- lm(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
 t2_m5 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
 t2_m6 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
-t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "text")
+t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$^2$", "Year", "Year$^2$", "Alliance (dummy)", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Colonial Contiguity", "Logged distance", "# States", "# Great Powers"))
 
 ##make table 3
 t3_m1<- lm(absno1diff ~ distance+ year+ numstates +numGPs, data= season_data)
