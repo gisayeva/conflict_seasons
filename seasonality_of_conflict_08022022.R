@@ -229,6 +229,7 @@ fig5 <- ggplot(data=mid_fig5, aes(y = edmidperday, x= enddata)) +
   theme_clean()
 fig5 
 
+
 ##saving the figures as pdf images
 ggsave(paste0("Fig1", ".pdf"), plot = fig1)
 ggsave(paste0("Fig2", ".pdf"), plot = fig2)
@@ -236,6 +237,9 @@ ggsave(paste0("Fig3", ".pdf"), plot = fig3)
 ggsave(paste0("Fig4", ".pdf"), plot = fig4)
 ggsave(paste0("Fig5", ".pdf"), plot = fig5)
 
+
+
+######
 ### use data from merged file
 mid <- mid %>% 
   arrange(statea, stateb, year) %>%
@@ -390,11 +394,11 @@ season_data <- season_data %>%
          absno1end=abs(203-no1enddata)
          )
 #comment: 176 is the median value of stdata
-#comment:  NA?? is the median value of no1stdata
+#comment:  NA is the median value of no1stdata
 #comment: 203 is the median value of enddata
 
 
-
+######
 ##Create table 1
 season_data_t1a<- season_data %>% arrange(stdata) %>%
   group_by(stdata) %>% slice(1) 
@@ -411,6 +415,7 @@ t1_m6<- glm.nb(edmidperday ~enddata +enddata2, data = season_data_t1b)
 t1a<- stargazer(t1_m1, t1_m2, t1_m3, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("All MIDs", "Fatal MIDs", "MID Wars"))
 t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("MID Wars", "Fatal MIDs", "Non-fatal MIDs"))
 
+#######
 ##make table 2
 ##the 6 models
 ##variable named numstate in Stata version of code
@@ -422,31 +427,98 @@ t2_m5 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capi
 t2_m6 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
 t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$^2$", "Year", "Year$^2$", "Alliance (dummy)", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Colonial Contiguity", "Logged distance", "# States", "# Great Powers"))
 
+######
 ##make table 3
 t3_m1<- lm(absno1diff ~ distance+ year+ numstates +numGPs, data= season_data)
 t3_m2 <- lm(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
 t3_m3 <- lm(absdiff ~ distance +recip+ year+ cap_1 +cap_2+ capinter+ demautai +demautbi+ demautinter +engypopa +engypopb+ engypopinter+ onemajor+ colcont +allydumy +numstates+ numGPs, data = season_data)
 t3_m4 <-  lm(absno1end ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
 t3_m5 <- lm(absno1end ~distance+ year +cap_1 +cap_2 +capinter+ demautai+ demautbi+ demautinter+ engypopa +engypopb+ engypopinter+ onemajor +colcont +defdummy +numstates+ numGPs, data= season_data, subset= (war ==1))
-t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "text")
+t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "latex", covariate.labels = c("Distance", "Reciprocated", "Year", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Devolopment$_{A}$", "Development$_{B}$", "Dev$_{A \times B}$", "Major Power","Colonial Contiguity", "Defense (dummy)", "Alliance", "# States", "# Great Powers"), dep.var.labels = c("Abs(day-mean(day))", "Abs(day-mean(day))", "Abs(day-mean(day))"))
 
+
+###########
 ## create figure 6
-pred<- predict(t2_m3, interval = "confidence")
-plot(pred)
-fig6<- ggplot(data = pred) %>% 
-  geom_smooth(aes(x=c(1:365), y= fit))
+### attempt 9/15/22
+#t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+##set all variables to median
+## set  no1stdata and no1stdata2 to 1 - 365
+##run predict
+mid_fig6 <- season_data %>%
+  ungroup() %>%
+  mutate(year = median(year, na.rm = T),
+         year2 = median(year2, na.rm = T),
+         defdummy = median(defdummy, na.rm = T),
+         cap_1 = median(cap_1, na.rm = T),
+         cap_2 = median(cap_2, na.rm = T),
+         capinter = median(capinter, na.rm = T),
+         demautai = median(demautai, na.rm = T),
+         demautbi = median(demautbi, na.rm = T),
+         demautinter = median(demautinter, na.rm = T),
+         colcont = median(colcont, na.rm = T),
+         logdist = median(logdist, na.rm = T),
+         numstates = median(numstates, na.rm = T),
+         numGPs = median(numGPs, na.rm = T)) %>%
+  slice_head(n=365) %>%
+  dplyr::select(c(year, year2,defdummy, cap_1, cap_2,capinter, demautai, demautbi, demautinter, colcont, logdist, numstates, numGPs))
 
-fig6<- ggplot(data = season_data, aes(y = latitude, x = stdata)) +
-  #geom_point() +
-  geom_smooth()
+mid_fig6$no1stdata <- c(1:365)  
+mid_fig6 <- mid_fig6 %>%
+  mutate(no1stdata2 = no1stdata^2)
+
+#predict new latitude for onset of MIDs based on median values for all variables except for day of onset, and day^2
+mid_fig6$pred <- predict(t2_m3, newdata = mid_fig6, interval = "confidence")
+
+fig6 <- ggplot(data = mid_fig6) +
+  geom_smooth(aes(x = c(1:365), y = pred[,1]), color = "black" , size = .7) +
+  geom_smooth(aes(x = c(1:365), y = pred[,2]), color= "lightblue", linetype = 2) +
+  geom_smooth(aes(x = c(1:365), y = pred[,3]), color= "lightblue", linetype = 2) +
+  ylab("Predicted Latitude of MID onsets")+
+  xlab("Day of Year")+
+  scale_x_continuous(breaks=seq(1,365,30)) +
+  scale_y_continuous(breaks = seq(20,32,1)) +
+  ggtitle("Latitude Predicted by Day in the Northern Hemisphere")+
+  theme_clean()
 fig6
 
-
-# add 'fit', 'lwr', and 'upr' columns to dataframe (generated by predict)
-lat.predict <- as.data.frame(cbind(season_data$stdata, season_data$latitude, predict(t2_m3, newdata = season_data, interval = "confidence")))
-# plot the points (actual observations), regression line, and confidence interval
-p <- ggplot(lat.predict, aes(V1,fit))
-#p <- p + geom_point()
-p <- p + geom_smooth(aes(V1, fit))
-p <- p + geom_ribbon(aes(ymin=lwr,ymax=upr), alpha=0.3)
-p
+######
+##new figure
+mid_fig7<- season_data %>% ungroup() %>% distinct(disno, .keep_all = T)
+fig7_all <- ggplot(mid_fig7) +
+  geom_bar(aes(x = strtyr)) +
+  scale_x_continuous(breaks = seq(1810,2010,20))+
+  xlab("Year") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Year, 1812-2010") +
+  theme_bw()
+fig7_all
+fig7a <- ggplot(subset(mid_fig7, strtyr %in% c(0:1850))) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Month, 1812-1850")+
+  theme_bw()
+fig7a
+fig7b <- ggplot(subset(mid_fig7, strtyr %in% c(1850:1900))) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Month, 1850-1900")
+fig7b
+fig7c <- ggplot(subset(mid_fig7, strtyr %in% c(1900:1950))) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Month, 1900-1950")
+fig7c
+fig7d <- ggplot(subset(mid_fig7, strtyr %in% c(1950:2000))) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Month, 1950-2000")
+fig7d
+fig7e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050))) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1)) +
+  xlab("Month") + ylab("Number of Dispute Onsets") +
+  ggtitle("Number of Dispute Onsets per Month, 2000-2010")
+fig7e
