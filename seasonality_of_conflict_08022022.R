@@ -152,6 +152,10 @@ mid <- mid %>%
   mutate(edfatpermon=sum(northfat)) %>%
   mutate(edwarpermon=sum(northwar))
  
+
+######
+##Figure 1
+######
 ###
 mid_fig1 <- mid %>% arrange(strtmnth) %>% 
   group_by(strtmnth) %>% slice(1)
@@ -165,10 +169,11 @@ fig1 <- ggplot(mid_fig1, aes(x= strtmnth,y= stwarpermon)) +
   ggtitle("MID War Onsets per Month")+ 
   labs(color="")+
   ylab("Number of War Onsets per Month")+ xlab("Month of Year") +
-  xlim(1,12) + ylim(-20,80)+ 
-  scale_x_continuous(breaks=seq(1,12,1))
+  ylim(-20,80)+ 
+  scale_x_continuous(breaks=seq(1,12,1))+
+  theme_clean()
 fig1+theme_bw()
-
+fig1
  
 ########
 #### Figure 2
@@ -400,6 +405,7 @@ season_data <- season_data %>%
 
 ######
 ##Create table 1
+######
 season_data_t1a<- season_data %>% arrange(stdata) %>%
   group_by(stdata) %>% slice(1) 
 season_data_t1b<- season_data %>% arrange(enddata) %>%
@@ -412,11 +418,12 @@ t1_m4<- glm.nb(edwarall~ enddata +enddata2, data = season_data_t1b)
 t1_m5<- glm.nb(edfatperday ~enddata+ enddata2, data = season_data_t1b)
 t1_m6<- glm.nb(edmidperday ~enddata +enddata2, data = season_data_t1b)
 
-t1a<- stargazer(t1_m1, t1_m2, t1_m3, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("All MIDs", "Fatal MIDs", "MID Wars"))
-t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("MID Wars", "Fatal MIDs", "Non-fatal MIDs"))
+t1a<- stargazer(t1_m1, t1_m2, t1_m3, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("All MIDs", "Fatal MIDs", "MID Wars"), out= "tab1a.tex")
+t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by the Day of Year", type = "text", covariate.labels = c("Day of Year", "Day of Year Squared", 'Intercept'), dep.var.labels = c("MID Wars", "Fatal MIDs", "Non-fatal MIDs"), out= "tab1b.tex")
 
 #######
 ##make table 2
+######
 ##the 6 models
 ##variable named numstate in Stata version of code
 t2_m1 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
@@ -425,16 +432,18 @@ t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2
 t2_m4 <- lm(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
 t2_m5 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
 t2_m6 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
-t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$^2$", "Year", "Year$^2$", "Alliance (dummy)", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Colonial Contiguity", "Logged distance", "# States", "# Great Powers"))
+#t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year^2","Day of Year adjusted", "Day of Year adjusted^2","Day of Year (end)", "Day of Year (end)^2", "Year", "Year^2", "Alliance (dummy)", "CINC_{A}","CINC_{B}","CINC_{A \times B}", "Democracy_{A}", "Democracy_{B}", "Dem_{A \times B}", "Colonial Contiguity", "Logged distance", "# States", "# Great Powers", "Constant"), out= "tab2")
+t2 <- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year2","Day of Year adjusted", "Day of Year adjusted2","Day of Year (end)", "Day of Year (end)2", "Year", "Year2", "Alliance (dummy)", "CINC A","CINC B","CINC A x B", "Democracy A", "Democracy B", "Dem A x B", "Colonial Contiguity", "Logged distance", "num States", "num Great Powers", "Constant"), out= "tab2.tex")
 
 ######
 ##make table 3
+######
 t3_m1<- lm(absno1diff ~ distance+ year+ numstates +numGPs, data= season_data)
 t3_m2 <- lm(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
 t3_m3 <- lm(absdiff ~ distance +recip+ year+ cap_1 +cap_2+ capinter+ demautai +demautbi+ demautinter +engypopa +engypopb+ engypopinter+ onemajor+ colcont +allydumy +numstates+ numGPs, data = season_data)
 t3_m4 <-  lm(absno1end ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
 t3_m5 <- lm(absno1end ~distance+ year +cap_1 +cap_2 +capinter+ demautai+ demautbi+ demautinter+ engypopa +engypopb+ engypopinter+ onemajor +colcont +defdummy +numstates+ numGPs, data= season_data, subset= (war ==1))
-t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "latex", covariate.labels = c("Distance", "Reciprocated", "Year", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Devolopment$_{A}$", "Development$_{B}$", "Dev$_{A \times B}$", "Major Power","Colonial Contiguity", "Defense (dummy)", "Alliance", "# States", "# Great Powers"), dep.var.labels = c("Abs(day-mean(day))", "Abs(day-mean(day))", "Abs(day-mean(day))"))
+t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "latex", covariate.labels = c("Distance", "Reciprocated", "Year", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Devolopment$_{A}$", "Development$_{B}$", "Dev$_{A \times B}$", "Major Power","Colonial Contiguity", "Defense (dummy)", "Alliance", "# States", "# Great Powers"), dep.var.labels = c("Abs(day-mean(day))", "Abs(day-mean(day))", "Abs(day-mean(day))"), out= "tab3.tex")
 
 
 ###########
@@ -480,9 +489,11 @@ fig6 <- ggplot(data = mid_fig6) +
   ggtitle("Latitude Predicted by Day in the Northern Hemisphere")+
   theme_clean()
 fig6
+ggsave(paste0("fig6", ".pdf"), plot = fig6, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data")
 
 ######
-##new figure
+##new figure: Figure 7
+##aggregate data by year
 mid_fig7<- season_data %>% ungroup() %>% distinct(disno, .keep_all = T)
 fig7_all <- ggplot(mid_fig7) +
   geom_bar(aes(x = strtyr)) +
@@ -502,23 +513,35 @@ fig7b <- ggplot(subset(mid_fig7, strtyr %in% c(1850:1900))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1850-1900")
+  ggtitle("Number of Dispute Onsets per Month, 1850-1900")+
+  theme_bw()
 fig7b
 fig7c <- ggplot(subset(mid_fig7, strtyr %in% c(1900:1950))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1900-1950")
+  ggtitle("Number of Dispute Onsets per Month, 1900-1950")+
+  theme_bw()
 fig7c
 fig7d <- ggplot(subset(mid_fig7, strtyr %in% c(1950:2000))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1950-2000")
+  ggtitle("Number of Dispute Onsets per Month, 1950-2000")+
+  theme_bw()
 fig7d
 fig7e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1)) +
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 2000-2010")
+  ggtitle("Number of Dispute Onsets per Month, 2000-2010")+
+  theme_bw()
 fig7e
+
+# ggsave(paste0("fig7_all", ".pdf"), plot = fig7_all, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7a", ".pdf"), plot = fig7a, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7b", ".pdf"), plot = fig7b, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7c", ".pdf"), plot = fig7c, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7d", ".pdf"), plot = fig7d, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7e", ".pdf"), plot = fig7e, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+
