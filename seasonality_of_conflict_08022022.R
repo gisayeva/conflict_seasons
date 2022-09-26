@@ -12,14 +12,14 @@ library("readxl")
 library(MASS)
 library(estimatr)
 library(stargazer)
-setwd("/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data")
+#setwd("")
 #load and clean MID location dataset
-temploc <- read_csv("MIDLOC_2.1/MIDLOCA_2.1.csv")
+temploc <- read_csv("MIDLOCA_2.1.csv")
 temploc<- rename(temploc, disno = dispnum)
 temploc <- dplyr::select(temploc, -c(year, midloc2_location, midloc2_measuringpoint))
 
 #load and clean mid dataset
-mid <- read_dta("dyadic_mid_4.01/dyadic_mid_4.01.dta") %>% 
+mid <- read_dta("dyadic_mid_4.01.dta") %>% 
   dplyr::select(-c("namea", "nameb")) %>% 
   left_join(temploc, by= c("disno")) %>% 
   arrange(statea, stateb, year) 
@@ -254,7 +254,7 @@ mid <- mid %>%
   )) %>%
   relocate(dyadidyr, .before = statea)
 
-dir_dyad <- read_csv("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data/directed_dyad_18162010.csv") %>% dplyr::select(-c(year))
+dir_dyad <- read_csv("directed_dyad_18162010.csv") %>% dplyr::select(-c(year))
 
 mid <- left_join(mid, dir_dyad, by = "dyadidyr") %>%
   mutate(stdata2=stdata*stdata,  enddata2=enddata*enddata, year2=year*year)
@@ -276,7 +276,7 @@ pol_2 <- pol_2 %>%
   rename(ccode_2 = ccode2, year= year2)
 
 #here, import dataset from MIDs that you use
-keys <- read_dta("dyadic_mid_4.01/dyadic_mid_4.01.dta") %>%
+keys <- read_dta("dyadic_mid_4.01.dta") %>%
   dplyr::select(statea, stateb, year) %>%
   unique() %>%
   rename(ccode_1 = statea, ccode_2 = stateb)
@@ -489,7 +489,7 @@ fig6 <- ggplot(data = mid_fig6) +
   ggtitle("Latitude Predicted by Day in the Northern Hemisphere")+
   theme_clean()
 fig6
-ggsave(paste0("fig6", ".pdf"), plot = fig6, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data")
+ggsave(paste0("fig6", ".pdf"), plot = fig6)
 
 ######
 ##new figure: Figure 7
@@ -538,10 +538,10 @@ fig7e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050))) +
   theme_bw()
 fig7e
 
-# ggsave(paste0("fig7_all", ".pdf"), plot = fig7_all, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
-# ggsave(paste0("fig7a", ".pdf"), plot = fig7a, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
-# ggsave(paste0("fig7b", ".pdf"), plot = fig7b, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
-# ggsave(paste0("fig7c", ".pdf"), plot = fig7c, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
-# ggsave(paste0("fig7d", ".pdf"), plot = fig7d, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
-# ggsave(paste0("fig7e", ".pdf"), plot = fig7e, path = "/Users/galinaisayeva/RA/Seasonality_of_conflict/new_data/Fig7")
+# ggsave(paste0("fig7_all", ".pdf"), plot = fig7_all)
+# ggsave(paste0("fig7a", ".pdf"), plot = fig7a)
+# ggsave(paste0("fig7b", ".pdf"), plot = fig7b)
+# ggsave(paste0("fig7c", ".pdf"), plot = fig7c)
+# ggsave(paste0("fig7d", ".pdf"), plot = fig7d)
+# ggsave(paste0("fig7e", ".pdf"), plot = fig7e)
 
