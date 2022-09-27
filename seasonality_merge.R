@@ -1,11 +1,11 @@
 #R script for merging several datasets
-setwd("/Users/galinaisayeva/RA/Seasonality_of_conflict/merge_data")
+#setwd("")
 library(tidyverse)
 library(expss)
 library(haven)
 library(countrycode)
 
-states <- read.csv("state_system/system2016.csv")
+states <- read.csv("system2016.csv")
 states <- states %>% mutate(majpow = case_when(
   ccode==2 & year>=1898 ~ 1,
   ccode==200 & year>=1816 ~1,
@@ -27,7 +27,7 @@ states <- states %>% mutate(majpow = case_when(
   dplyr::select(-version)
 
 #get capabilities data
-capab <- read_dta("NMC_6.0/NMC-60-abridged/NMC-60-abridged.dta") %>%
+capab <- read_dta("NMC-60-abridged.dta") %>%
   dplyr::select(-c(version, stateabb)) %>%
   rename(cap= cinc)
 
@@ -53,7 +53,7 @@ keys <- read_dta("dyadic_mid_4.01.dta") %>%
 directed_dyad_18162010 <- left_join(keys, states_1) %>% left_join(states_2) 
 
 #clean contiguity data
-contg<- read_dta("DirectContiguity320/contdird.dta") %>%
+contg<- read_dta("contdird.dta") %>%
   rename(ccode_1 = state1no, ccode_2 = state2no) %>%
   dplyr::select(-c(state1ab, state2ab, version)) %>%
   group_by(ccode_1, ccode_2, year) %>%
@@ -64,7 +64,7 @@ contg<- read_dta("DirectContiguity320/contdird.dta") %>%
 directed_dyad_18162010 <- directed_dyad_18162010 %>% left_join(contg, by = c("ccode_1", "ccode_2", "year")) %>% mutate(conttype = replace_na(conttype,0))
 
 #clean colonial contiguity data
-colcontg <- read_dta("ColonialContiguity310/contcol.dta") %>%
+colcontg <- read_dta("contcol.dta") %>%
   rename(ccode_1 = statelno, ccode_2 = statehno, colcont = conttype) %>%
   dplyr::select(-c(statelab, statehab, version, dependl, dependh)) %>%
   rowwise() %>%
@@ -82,7 +82,7 @@ directed_dyad_18162010 <-  left_join(directed_dyad_18162010, colcontg, by = c("c
   mutate(colcont = replace_na(colcont, 0))
 
 #clean alliance data
-alliance <- read_dta("alliance_4.1/alliance_v4.1_by_dyad_yearly.dta") %>%
+alliance <- read_dta("alliance_v4.1_by_dyad_yearly.dta") %>%
   rename(ccode_1 = ccode1, ccode_2 = ccode2) %>%
   mutate(alliance = case_when(
     defense ==1 ~ 1,
@@ -101,7 +101,7 @@ directed_dyad_18162010 <-  left_join(directed_dyad_18162010, alliance, by = c("c
   mutate(alliance = replace_na(alliance, 0))
 
 # clean distance data
-dist <- read_dta("cepii/dist_cepii.dta") 
+dist <- read_dta("dist_cepii.dta") 
 # ISO to Correlates of War
   
 dist <- dist %>% mutate(ccode_1 = countrycode(iso_o, origin = 'iso3c', destination = 'cown'), ccode_2 = countrycode(iso_d, origin = 'iso3c', destination = 'cown'))
