@@ -18,6 +18,8 @@ temploc <- read_csv("MIDLOCA_2.1.csv")
 temploc<- rename(temploc, disno = dispnum)
 temploc <- dplyr::select(temploc, -c(year, midloc2_location, midloc2_measuringpoint))
 
+#testing how branches work
+
 #load and clean mid dataset
 mid <- read_dta("dyadic_mid_4.01.dta") %>% 
   dplyr::select(-c("namea", "nameb")) %>% 
