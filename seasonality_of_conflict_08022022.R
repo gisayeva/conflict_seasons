@@ -432,13 +432,32 @@ t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by t
 ##the 6 models in table 2
 ##variable named numstate in Stata version of code instead of numstates
 t2_m1 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
-t2_m2 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(northwar ==1))
-t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m2 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+t2_m3 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(northwar ==1))
 t2_m4 <- lm(latitude ~ enddata +enddata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
 t2_m5 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & terr ==1))
 t2_m6 <- lm(latitude ~ stdata +stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1 & nonterr ==1))
-#t2<- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year^2","Day of Year adjusted", "Day of Year adjusted^2","Day of Year (end)", "Day of Year (end)^2", "Year", "Year^2", "Alliance (dummy)", "CINC_{A}","CINC_{B}","CINC_{A \times B}", "Democracy_{A}", "Democracy_{B}", "Dem_{A \times B}", "Colonial Contiguity", "Logged distance", "# States", "# Great Powers", "Constant"), out= "tab2")
-t2 <- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year2","Day of Year adjusted", "Day of Year adjusted2","Day of Year (end)", "Day of Year (end)2", "Year", "Year2", "Alliance (dummy)", "CINC A","CINC B","CINC A x B", "Democracy A", "Democracy B", "Dem A x B", "Colonial Contiguity", "Logged distance", "num States", "num Great Powers", "Constant"), out= "tab2.tex")
+
+#rename stdata, no1stdata, enddata into day
+names(t2_m1$coefficients)[names(t2_m1$coefficients) == "stdata"] <- "day"
+names(t2_m2$coefficients)[names(t2_m2$coefficients) == "no1stdata"] <- "day"
+names(t2_m3$coefficients)[names(t2_m3$coefficients) == "stdata"] <- "day"
+names(t2_m4$coefficients)[names(t2_m4$coefficients) == "enddata"] <- "day"
+names(t2_m5$coefficients)[names(t2_m5$coefficients) == "stdata"] <- "day"
+names(t2_m6$coefficients)[names(t2_m6$coefficients) == "stdata"] <- "day"
+
+#rename stdata2, no1stdata2, enddata2 into day2
+names(t2_m1$coefficients)[names(t2_m1$coefficients) == "stdata2"] <- "day2"
+names(t2_m2$coefficients)[names(t2_m2$coefficients) == "no1stdata2"] <- "day2"
+names(t2_m3$coefficients)[names(t2_m3$coefficients) == "stdata2"] <- "day2"
+names(t2_m4$coefficients)[names(t2_m4$coefficients) == "enddata2"] <- "day2"
+names(t2_m5$coefficients)[names(t2_m5$coefficients) == "stdata2"] <- "day2"
+names(t2_m6$coefficients)[names(t2_m6$coefficients) == "stdata2"] <- "day2"
+
+#table 2 with labelled rows
+t2 <- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$\\^2$", "Year", "Year$\\^2$", "Alliance (dummy)", "CINC$\\_A$","CINC$\\_B$","CINC$\\_{A\\times B}$", "Democracy$\\_A$", "Democracy$\\_B$", "Dem$\\_{A\\times B}$", "Colonial Contiguity", "Logged distance", "\\# States", "\\#  Great Powers", "Constant"), omit.stat=c("f", "ser"), column.sep.width = "-10pt", out= "tab2.tex")
+
+#maybe try  column.sep.width = "-15pt",
 
 ######
 ##make table 3
