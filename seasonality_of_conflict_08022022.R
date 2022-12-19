@@ -13,6 +13,9 @@ library(MASS)
 library(estimatr)
 library(stargazer)
 #setwd("")
+
+##data prep
+##########
 #load and clean MID location dataset
 temploc <- read_csv("MIDLOCA_2.1.csv")
 temploc<- rename(temploc, disno = dispnum)
@@ -246,6 +249,8 @@ ggsave(paste0("Fig5", ".pdf"), plot = fig5)
 
 ######
 ### use data from merged file
+### following is data prep for tables
+########
 mid <- mid %>% 
   arrange(statea, stateb, year) %>%
   mutate(dyadidyr = case_when(
@@ -424,8 +429,8 @@ t1b<- stargazer(t1_m4, t1_m5, t1_m6, title = "Predicting the Timing of MIDs by t
 #######
 ##make table 2
 ######
-##the 6 models
-##variable named numstate in Stata version of code
+##the 6 models in table 2
+##variable named numstate in Stata version of code instead of numstates
 t2_m1 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(north ==1))
 t2_m2 <- lm(latitude ~ stdata +stdata2 +year +year2+ numstates +numGPs, data= season_data, subset =(northwar ==1))
 t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
