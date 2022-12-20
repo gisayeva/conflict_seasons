@@ -455,9 +455,7 @@ names(t2_m5$coefficients)[names(t2_m5$coefficients) == "stdata2"] <- "day2"
 names(t2_m6$coefficients)[names(t2_m6$coefficients) == "stdata2"] <- "day2"
 
 #table 2 with labelled rows
-t2 <- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$\\^2$", "Year", "Year$\\^2$", "Alliance (dummy)", "CINC$\\_A$","CINC$\\_B$","CINC$\\_{A\\times B}$", "Democracy$\\_A$", "Democracy$\\_B$", "Dem$\\_{A\\times B}$", "Colonial Contiguity", "Logged distance", "\\# States", "\\#  Great Powers", "Constant"), omit.stat=c("f", "ser"), column.sep.width = "-10pt", out= "tab2.tex")
-
-#maybe try  column.sep.width = "-15pt",
+t2 <- stargazer(t2_m1, t2_m2, t2_m3, t2_m4, t2_m5, t2_m6, title = "The Effect of Seasonal Change on the Latitude of Militarized Interstate Disputes", type = "latex", covariate.labels = c("Day of Year", "Day of Year$^{2}$", "Year", "Year$^{2}$", "Alliance (dummy)", "CINC$_{A}$","CINC$_{B}$","CINC$_{A\\times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \\times B}$", "Colonial Contiguity", "Logged distance", "\\# States", "\\#  Great Powers", "Constant"), omit.stat=c("f", "ser"), column.sep.width = "-10pt", no.space=TRUE, out= "tab2.tex")
 
 ######
 ##make table 3
@@ -467,15 +465,16 @@ t3_m2 <- lm(absno1diff ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont 
 t3_m3 <- lm(absdiff ~ distance +recip+ year+ cap_1 +cap_2+ capinter+ demautai +demautbi+ demautinter +engypopa +engypopb+ engypopinter+ onemajor+ colcont +allydumy +numstates+ numGPs, data = season_data)
 t3_m4 <-  lm(absno1end ~ distance +recip +year +cap_1 +cap_2 +capinter +colcont +defdummy +numstates+ numGPs, data = season_data)
 t3_m5 <- lm(absno1end ~distance+ year +cap_1 +cap_2 +capinter+ demautai+ demautbi+ demautinter+ engypopa +engypopb+ engypopinter+ onemajor +colcont +defdummy +numstates+ numGPs, data= season_data, subset= (war ==1))
-t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "latex", covariate.labels = c("Distance", "Reciprocated", "Year", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \times B}$", "Devolopment$_{A}$", "Development$_{B}$", "Dev$_{A \times B}$", "Major Power","Colonial Contiguity", "Defense (dummy)", "Alliance", "# States", "# Great Powers"), dep.var.labels = c("Abs(day-mean(day))", "Abs(day-mean(day))", "Abs(day-mean(day))"), out= "tab3.tex")
+t3<- stargazer(t3_m1, t3_m2, t3_m3, t3_m4, t3_m5, title = "The Effect of Distance on the Timing of MIDs", type = "latex", covariate.labels = c("Distance", "Reciprocated", "Year", "CINC$_{A}$","CINC$_{B}$","CINC$_{A \\times B}$", "Democracy$_{A}$", "Democracy$_{B}$", "Dem$_{A \\times B}$", "Devolopment$_{A}$", "Development$_{B}$", "Dev$_{A \\times B}$", "Major Power","Colonial Contiguity", "Defense (dummy)", "Alliance", "\\# States", "\\# Great Powers"), dep.var.labels = c("Abs(day-mean(day))", "Abs(day-mean(day))", "Abs(day-mean(day))"), omit.stat=c("f", "ser"), column.sep.width = "-10pt", no.space=TRUE, out= "tab3.tex")
 
 
 ###########
 ## create figure 6
-### attempt 9/15/22
-#t2_m3 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
+### based on model 2 from table 2
+##########
+## t2_m2 <- lm(latitude ~ no1stdata +no1stdata2 +year+ year2+defdummy+ cap_1+ cap_2 +capinter+ demautai+ demautbi+ demautinter+ colcont +logdist+ numstates +numGPs, data= season_data, subset =(north ==1))
 ##set all variables to median
-## set  no1stdata and no1stdata2 to 1 - 365
+## set no1stdata and no1stdata2 to 1 - 365 (generated data)
 ##run predict
 mid_fig6 <- season_data %>%
   ungroup() %>%
@@ -495,12 +494,16 @@ mid_fig6 <- season_data %>%
   slice_head(n=365) %>%
   dplyr::select(c(year, year2,defdummy, cap_1, cap_2,capinter, demautai, demautbi, demautinter, colcont, logdist, numstates, numGPs))
 
+# mid_fig6$no1stdata <- c(1:365)  
+# mid_fig6 <- mid_fig6 %>%
+#   mutate(no1stdata2 = no1stdata^2)
+
 mid_fig6$no1stdata <- c(1:365)  
 mid_fig6 <- mid_fig6 %>%
   mutate(no1stdata2 = no1stdata^2)
 
 #predict new latitude for onset of MIDs based on median values for all variables except for day of onset, and day^2
-mid_fig6$pred <- predict(t2_m3, newdata = mid_fig6, interval = "confidence")
+mid_fig6$pred <- predict(t2_m2, newdata = mid_fig6, interval = "confidence")
 
 fig6 <- ggplot(data = mid_fig6) +
   geom_smooth(aes(x = c(1:365), y = pred[,1]), color = "black" , size = .7) +
@@ -510,7 +513,7 @@ fig6 <- ggplot(data = mid_fig6) +
   xlab("Day of Year")+
   scale_x_continuous(breaks=seq(1,365,30)) +
   scale_y_continuous(breaks = seq(20,32,1)) +
-  ggtitle("Latitude Predicted by Day in the Northern Hemisphere")+
+  #ggtitle("Latitude Predicted by Day in the Northern Hemisphere")+
   theme_clean()
 fig6
 ggsave(paste0("fig6", ".pdf"), plot = fig6)
