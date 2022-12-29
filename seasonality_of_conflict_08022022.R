@@ -519,51 +519,56 @@ fig6
 ggsave(paste0("fig6", ".pdf"), plot = fig6)
 
 ######
-##new figure: Figure 7
+
+############
+##Appendix Figures
+##############
+##Figure 7: Dispute onsets by year, grouped by 50 years
+########
 ##aggregate data by year
 mid_fig7<- season_data %>% ungroup() %>% distinct(disno, .keep_all = T)
 fig7_all <- ggplot(mid_fig7) +
   geom_bar(aes(x = strtyr)) +
   scale_x_continuous(breaks = seq(1810,2010,20))+
   xlab("Year") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Year, 1812-2010") +
-  theme_bw()
-fig7_all
+  #ggtitle("Number of Dispute Onsets per Year, 1812-2010") +
+  theme_clean()
+#fig7_all
 fig7a <- ggplot(subset(mid_fig7, strtyr %in% c(0:1850))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1812-1850")+
-  theme_bw()
-fig7a
+  #ggtitle("Number of Dispute Onsets per Month, 1812-1850")+
+  theme_clean()
+#fig7a
 fig7b <- ggplot(subset(mid_fig7, strtyr %in% c(1850:1900))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1850-1900")+
-  theme_bw()
-fig7b
+  #ggtitle("Number of Dispute Onsets per Month, 1850-1900")+
+  theme_clean()
+#fig7b
 fig7c <- ggplot(subset(mid_fig7, strtyr %in% c(1900:1950))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1900-1950")+
-  theme_bw()
-fig7c
+ # ggtitle("Number of Dispute Onsets per Month, 1900-1950")+
+  theme_clean()
+#fig7c
 fig7d <- ggplot(subset(mid_fig7, strtyr %in% c(1950:2000))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1))+
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 1950-2000")+
-  theme_bw()
-fig7d
+  #ggtitle("Number of Dispute Onsets per Month, 1950-2000")+
+  theme_clean()
+#fig7d
 fig7e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050))) +
   geom_bar(aes(x = strtmnth)) +
   scale_x_continuous(breaks = seq(1,12,1)) +
   xlab("Month") + ylab("Number of Dispute Onsets") +
-  ggtitle("Number of Dispute Onsets per Month, 2000-2010")+
-  theme_bw()
-fig7e
+  #ggtitle("Number of Dispute Onsets per Month, 2000-2010")+
+  theme_clean()
+#fig7e
 
 # ggsave(paste0("fig7_all", ".pdf"), plot = fig7_all)
 # ggsave(paste0("fig7a", ".pdf"), plot = fig7a)
@@ -571,4 +576,101 @@ fig7e
 # ggsave(paste0("fig7c", ".pdf"), plot = fig7c)
 # ggsave(paste0("fig7d", ".pdf"), plot = fig7d)
 # ggsave(paste0("fig7e", ".pdf"), plot = fig7e)
+
+##############
+##Figure 8: Dispute onsets by year, grouped by 50 years
+## only non-fatal MIDS 
+########
+##aggregate data by year
+#mid_fig7<- season_data %>% ungroup() %>% distinct(disno, .keep_all = T)
+fig8_all <- ggplot(subset(mid_fig7, fatlev == "None")) +
+  geom_bar(aes(x = strtyr)) +
+  scale_x_continuous(breaks = seq(1810,2010,20))+
+  xlab("Year") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of  Non-fatal MID Onsets per Year, 1812-2010") +
+  theme_clean()
+fig8_all
+fig8a <- ggplot(subset(mid_fig7, strtyr %in% c(0:1850) & fatlev == "None")) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of Non-fatal MID Onsets per Month, 1812-1850")+
+  theme_clean()
+
+fig8b <- ggplot(subset(mid_fig7, strtyr %in% c(1850:1900) & fatlev == "None")) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of  Non-fatal MID Onsets per Month, 1850-1900")+
+  theme_clean()
+
+fig8c <- ggplot(subset(mid_fig7, strtyr %in% c(1900:1950) & fatlev == "None")) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of  Non-fatal MID Onsets per Month, 1900-1950")+
+  theme_clean()
+
+fig8d <- ggplot(subset(mid_fig7, strtyr %in% c(1950:2000) & fatlev == "None")) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of  Non-fatal MID Onsets per Month, 1950-2000")+
+  theme_clean()
+
+fig8e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050) & fatlev == "None")) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1)) +
+  xlab("Month") + ylab("Number of  Non-fatal MID Onsets") +
+  #ggtitle("Number of  Non-fatal MID Onsets per Month, 2000-2010")+
+  theme_clean()
+
+
+############
+## Figure 9: Dispute onsets by year, grouped by 50 years
+## only MID WARS/Major MIDs 
+###########
+#mid_fig7<- season_data %>% ungroup() %>% distinct(disno, .keep_all = T)
+fig9_all <- ggplot(subset(mid_fig7, war == 1)) +
+  geom_bar(aes(x = strtyr)) +
+  scale_x_continuous(breaks = seq(1810,2010,20))+
+  xlab("Year") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Year, 1812-2010") +
+  theme_clean()
+
+fig9a <- ggplot(subset(mid_fig7, strtyr %in% c(0:1850) & war == 1)) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Month, 1812-1850")+
+  theme_clean()
+
+fig9b <- ggplot(subset(mid_fig7, strtyr %in% c(1850:1900) & war == 1)) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Month, 1850-1900")+
+  theme_clean()
+
+fig9c <- ggplot(subset(mid_fig7, strtyr %in% c(1900:1950) & war == 1)) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Month, 1900-1950")+
+  theme_clean()
+
+fig9d <- ggplot(subset(mid_fig7, strtyr %in% c(1950:2000) & war == 1)) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1))+
+  xlab("Month") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Month, 1950-2000")+
+  theme_clean()
+
+fig9e <- ggplot(subset(mid_fig7, strtyr %in% c(2000:2050) & war == 1)) +
+  geom_bar(aes(x = strtmnth)) +
+  scale_x_continuous(breaks = seq(1,12,1)) +
+  xlab("Month") + ylab("Number of War Onsets") +
+  #ggtitle("Number of War Onsets per Month, 2000-2010")+
+  theme_clean()
+
 
